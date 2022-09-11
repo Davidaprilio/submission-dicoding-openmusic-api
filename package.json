@@ -1,0 +1,33 @@
+{
+  "name": "openmusic-api",
+  "version": "1.0.0",
+  "description": "Submission Openmusic API - diCoding",
+  "main": "index.js",
+  "scripts": {
+    "start-prod": "NODE_ENV=production node ./src/server.js",
+    "start-win-prod": "SET NODE_ENV=development & node ./src/server.js",
+    "start-dev": "nodemon ./src/server.js",
+    "migrate": "node-pg-migrate",
+    "lint": "eslint ./src"
+  },
+  "keywords": [
+    "submission",
+    "dicoding"
+  ],
+  "author": "David Aprilio",
+  "license": "ISC",
+  "devDependencies": {
+    "eslint": "^7.21.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.22.1",
+    "nodemon": "^2.0.7"
+  },
+  "dependencies": {
+    "@hapi/hapi": "^20.1.0",
+    "dotenv": "^16.0.2",
+    "joi": "^17.6.0",
+    "nanoid": "^3.1.20",
+    "node-pg-migrate": "^6.2.2",
+    "pg": "^8.8.0"
+  }
+}
