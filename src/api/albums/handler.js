@@ -20,7 +20,6 @@ class AlbumsHandler {
 
             return h.response({
                 status: 'success',
-                // message: 'Album berhasil ditambahkan',
                 data: {
                     albumId,
                 },

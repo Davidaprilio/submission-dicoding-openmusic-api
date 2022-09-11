@@ -36,6 +36,7 @@ const init = async () => {
 
     await server.start();
     console.log(`Server berjalan pada ${server.info.uri}`);
+    console.log('Give me 5⭐ coach');
 };
 
 init();

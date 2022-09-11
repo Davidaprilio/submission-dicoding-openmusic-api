@@ -25,7 +25,6 @@ class SongsHandler {
 
             return h.response({
                 status: 'success',
-                // message: 'Lagu berhasil ditambahkan',
                 data: {
                     songId,
                 },
