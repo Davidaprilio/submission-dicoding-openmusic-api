@@ -9,6 +9,7 @@ const {
     songs,
     users,
     authentications,
+    playlists,
 } = require('./api');
 
 const {
@@ -16,6 +17,7 @@ const {
     SongsService,
     UsersService,
     AuthenticationsService,
+    PlaylistsService,
 } = require('./services/postgres');
 
 const {
@@ -23,6 +25,7 @@ const {
     SongsValidator,
     UsersValidator,
     AuthenticationsValidator,
+    PlaylistsValidator,
 } = require('./validator');
 
 const { ClientError } = require('./exceptions');
@@ -32,6 +35,7 @@ const init = async () => {
     const songsService = new SongsService();
     const usersService = new UsersService();
     const authenticationsService = new AuthenticationsService();
+    const playlistsService = new PlaylistsService();
 
     const server = Hapi.server({
         port: process.env.PORT,
@@ -98,27 +102,43 @@ const init = async () => {
                 validator: AuthenticationsValidator,
             },
         },
+        {
+            plugin: playlists,
+            options: {
+                service: playlistsService,
+                validator: PlaylistsValidator,
+            },
+        },
     ]);
 
     server.ext('onPreResponse', (request, h) => {
         const { response } = request;
 
         // Jika response adalah Error
-        if (response.isBoom) {
-            if (response instanceof ClientError) {
-                const newResponse = h.response({
-                    status: 'fail',
-                    message: response.message,
-                });
-                newResponse.code(response.statusCode);
-                return newResponse;
+        if (response instanceof ClientError) {
+            const newResponse = h.response({
+                status: 'fail',
+                message: response.message,
+            });
+            newResponse.code(response.statusCode);
+            return newResponse;
+        }
+
+        if (response instanceof Error) {
+            const { statusCode } = response.output;
+            let errorMessage = response.message;
+
+            if (statusCode === 500) {
+                // Server Error
+                console.error('Error:', statusCode, errorMessage, response);
+                errorMessage = 'Maaf, terjadi kegagalan pada server kami.';
             }
 
-            // Server ERROR!
+            // Response ERROR!
             return h.response({
                 status: 'error',
-                message: 'Maaf, terjadi kegagalan pada server kami.',
-            }).code(500);
+                message: errorMessage,
+            }).code(statusCode);
         }
 
         return response.continue || response;
