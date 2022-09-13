@@ -3,8 +3,9 @@ const { Pool } = require('pg');
 const { InvariantError, NotFoundError, AuthorizationError } = require('../../exceptions');
 
 class PlaylitsService {
-    constructor() {
+    constructor(collaborationService) {
         this._pool = new Pool();
+        this._collaborationService = collaborationService;
     }
 
     async addPlaylist({ name, owner }) {
@@ -26,8 +27,11 @@ class PlaylitsService {
     async getPlaylists(owner) {
         const query = {
             text: `SELECT playlists.id, playlists.name, users.username 
-            FROM playlists LEFT JOIN users ON users.id = playlists.owner 
-            WHERE playlists.owner = $1`,
+            FROM playlists
+            LEFT JOIN users ON users.id = playlists.owner 
+            LEFT JOIN collaborations ON collaborations.playlist_id = playlists.id
+            WHERE playlists.owner = $1 
+            OR collaborations.user_id = $1`,
             values: [owner],
         };
 
@@ -82,6 +86,21 @@ class PlaylitsService {
 
         if (playlist.owner !== owner) {
             throw new AuthorizationError('Anda tidak berhak mengakses resource ini');
+        }
+    }
+
+    async verifyPlaylistAccess(id, userId) {
+        try {
+            await this.verifyPlaylistOwner(id, userId);
+        } catch (error) {
+            if (error instanceof NotFoundError) {
+                throw error;
+            }
+            try {
+                await this._collaborationService.verifyCollaborator(id, userId);
+            } catch {
+                throw error;
+            }
         }
     }
 
