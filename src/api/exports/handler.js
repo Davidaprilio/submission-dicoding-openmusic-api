@@ -12,14 +12,14 @@ class ExportsHandler {
         const { playlistId } = request.params;
         const { userId } = request.auth.credentials;
 
-        await this._playlistsService.verifyPlaylistAccess(playlistId, userId);
+        await this._playlistsService.verifyPlaylistOwner(playlistId, userId);
 
         const message = {
-            userId,
+            playlistId,
             targetEmail: request.payload.targetEmail,
         };
 
-        await this._ProducerService.sendMessage('export:payloads', JSON.stringify(message));
+        await this._ProducerService.sendMessage('export:playlists', JSON.stringify(message));
 
         return h.response({
             status: 'success',
