@@ -5,4 +5,15 @@ const AlbumPayloadSchema = Joi.object({
     year: Joi.number().min(1900).max(new Date().getFullYear()).required(),
 });
 
-module.exports = { AlbumPayloadSchema };
+const AlbumCoverPayloadSchema = Joi.object({
+    'content-type': Joi.string().valid(
+        'image/apng',
+        'image/avif',
+        'image/gif',
+        'image/jpeg',
+        'image/png',
+        'image/webp',
+    ).required(),
+}).unknown();
+
+module.exports = { AlbumPayloadSchema, AlbumCoverPayloadSchema };
