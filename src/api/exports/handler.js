@@ -19,7 +19,7 @@ class ExportsHandler {
             targetEmail: request.payload.targetEmail,
         };
 
-        await this._ProducerService.sendMessage('export:notes', JSON.stringify(message));
+        await this._ProducerService.sendMessage('export:payloads', JSON.stringify(message));
 
         return h.response({
             status: 'success',
