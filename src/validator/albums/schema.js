@@ -1,7 +1,7 @@
 const Joi = require('joi');
 
 const AlbumPayloadSchema = Joi.object({
-    name: Joi.string().required(),
+    name: Joi.string().max(255).required(),
     year: Joi.number().min(1900).max(new Date().getFullYear()).required(),
 });
 

@@ -26,6 +26,7 @@ const {
 } = require('./services/postgres');
 const ProducerService = require('./services/rabbitmq/ProducerService');
 const StorageService = require('./services/storage/StorageService');
+const CacheService = require('./services/redis/CacheService');
 
 const {
     AlbumsValidator,
@@ -40,7 +41,8 @@ const {
 const { ClientError } = require('./exceptions');
 
 const init = async () => {
-    const albumsService = new AlbumsService();
+    const cacheService = new CacheService();
+    const albumsService = new AlbumsService(cacheService);
     const songsService = new SongsService();
     const usersService = new UsersService();
     const authenticationsService = new AuthenticationsService();

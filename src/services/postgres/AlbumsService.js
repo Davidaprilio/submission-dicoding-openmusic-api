@@ -4,8 +4,9 @@ const { InvariantError, NotFoundError } = require('../../exceptions');
 const { mapDBToModel, mapAlbumsTBToModel } = require('../../utils');
 
 class AlbumsService {
-    constructor() {
+    constructor(cacheService) {
         this._pool = new Pool();
+        this._cacheService = cacheService;
     }
 
     async addAlbum({ name, year }) {
@@ -87,6 +88,59 @@ class AlbumsService {
         if (!result.rows.length) {
             throw new NotFoundError('Album gagal dihapus. Id tidak ditemukan');
         }
+    }
+
+    async getLikesAlbums(albumId) {
+        try {
+            const likes = await this._cacheService.get(`likes:${albumId}`);
+            return { likes, source: 'cache' };
+        } catch (error) {
+            const query = {
+                text: 'SELECT COUNT(*) as likes FROM user_album_likes WHERE album_id = $1',
+                values: [albumId],
+            };
+
+            const result = await this._pool.query(query);
+
+            const { likes } = result.rows[0];
+
+            await this._cacheService.set(`likes:${albumId}`, likes);
+
+            return { likes, source: 'database' };
+        }
+    }
+
+    async addOrDeleteLikeAlbums(albumId, userId) {
+        const query = {
+            text: 'SELECT * FROM user_album_likes WHERE album_id = $1 AND user_id = $2',
+            values: [albumId, userId],
+        };
+
+        const result = await this._pool.query(query);
+
+        if (result.rowCount) {
+            const deleted = await this._pool.query({
+                text: 'DELETE FROM user_album_likes WHERE id = $1',
+                values: [result.rows[0].id],
+            });
+
+            if (!deleted.rowCount) {
+                throw new NotFoundError('Gagal menghapus like album');
+            }
+            await this._cacheService.delete(`likes:${albumId}`);
+            return false;
+        }
+
+        const insert = await this._pool.query({
+            text: 'INSERT INTO user_album_likes VALUES($1, $2, $3)',
+            values: [`likes-${nanoid(16)}`, userId, albumId],
+        });
+
+        if (!insert.rowCount) {
+            throw new InvariantError('Gagal menambahkan like album');
+        }
+        await this._cacheService.delete(`likes:${albumId}`);
+        return true;
     }
 }
 

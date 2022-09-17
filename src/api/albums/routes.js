@@ -23,6 +23,19 @@ const routes = (handler) => [
     },
     {
         method: 'POST',
+        path: '/albums/{id}/likes',
+        handler: handler.postLikesAlbumByIdHandler,
+        options: {
+            auth: 'openmusic_jwt',
+        },
+    },
+    {
+        method: 'GET',
+        path: '/albums/{id}/likes',
+        handler: handler.getLikesAlbumByIdHandler,
+    },
+    {
+        method: 'POST',
         path: '/albums/{id}/covers',
         handler: handler.postAlbumCoverHandler,
         options: {
